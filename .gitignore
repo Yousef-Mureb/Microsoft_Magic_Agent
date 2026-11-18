@@ -1,0 +1,27 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Project-local tooling (the uv binary, its cache and its managed Python)
+.tools/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+
+# Evaluation output
+evaluations/results/
+
+# The development price store and the files the agent made
+*.sqlite3
+files/
+
+# Local renders of checks (diagrams, workbooks)
+out/

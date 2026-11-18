@@ -1,0 +1,3704 @@
+{
+  "name": "Lenovo AI Express vendor agent",
+  "description": "Lenovo AI Express vendor agent for MAGIC: sizing, validated references, full BOM by role with Lenovo rules, prices with source and date, photos, rack figures and answers from the Lenovo guides. Contract vendor-agent/1: send a data part {\"skill\": \u003Cskill id\u003E, \"request\": {...}}.",
+  "supportedInterfaces": [
+    {
+      "url": "https://magiclenovo.nizamai.com/a2a/lenovo",
+      "protocolBinding": "JSONRPC",
+      "protocolVersion": "1.0"
+    },
+    {
+      "url": "https://magiclenovo.nizamai.com/a2a/lenovo/rest",
+      "protocolBinding": "HTTP+JSON",
+      "protocolVersion": "1.0"
+    }
+  ],
+  "provider": {
+    "url": "https://magiclenovo.nizamai.com",
+    "organization": "Data Monsters"
+  },
+  "version": "1.1.0",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": true,
+    "extensions": [
+      {
+        "uri": "urn:magic:vendor-agent:1",
+        "description": "Input schema of every skill (vendor-agent/1)",
+        "params": {
+          "schemas": {
+            "design_change": {
+              "properties": {
+                "change": {
+                  "$ref": "#/$defs/Change"
+                },
+                "part": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "$defs": {
+                "Change": {
+                  "properties": {
+                    "code": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "value": {
+                      "default": null
+                    },
+                    "kind": {
+                      "enum": [
+                        "users",
+                        "model",
+                        "params_b",
+                        "precision",
+                        "tier",
+                        "country",
+                        "service_years",
+                        "rag",
+                        "ha",
+                        "tokens_in",
+                        "tokens_out",
+                        "requests_per_minute",
+                        "qty",
+                        "add",
+                        "remove"
+                      ],
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "kind"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "part",
+                "change"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "reference_match": {
+              "properties": {
+                "precision": {
+                  "enum": [
+                    "fp32",
+                    "fp16",
+                    "bf16",
+                    "fp8",
+                    "int8",
+                    "int4",
+                    "fp4"
+                  ],
+                  "default": "fp8",
+                  "type": "string"
+                },
+                "workloads": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/Workload"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Several workloads on one cluster, instead of model/users; each gets its own GPUs, packed into servers"
+                },
+                "rag_corpus_gb": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "country": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                },
+                "tokens_out": {
+                  "default": 400,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "itl_ms": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time between tokens, ms"
+                },
+                "requests_per_minute": {
+                  "default": 2,
+                  "description": "Requests per user per minute; 0 = every user always has a request waiting (the Lenovo Sizing Tool's meaning)",
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "nvlink": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "NVLink between GPUs; default: as the GPU supports it"
+                },
+                "gpu": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 80,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The GPU the customer names, as said, e.g. 'B200', 'H200 SXM', 'H100 NVL', 'L40S'. A reference built on it is used (AI Express or SR680a V3); when none is, the design keeps its own GPU and requested_gpu gives the Lenovo Sizing Tool's answer for the named one"
+                },
+                "model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model key, e.g. llama3-70b, qwen3-32b, deepseek-v3"
+                },
+                "use_case": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "chatbot",
+                        "multimodal",
+                        "codeassistant",
+                        "content",
+                        "documentqa",
+                        "api",
+                        "research",
+                        "custom"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The Lenovo Sizing Tool's use case: its preset tokens and rate when those are not given"
+                },
+                "service_years": {
+                  "enum": [3, 5],
+                  "default": 3,
+                  "type": "integer"
+                },
+                "existing": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/ExistingGpus"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPUs the customer already has: they carry the load first; only the rest is sized on new servers"
+                },
+                "line": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 40,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Product line: ai_express (default), mvp (HGX servers), edge (ThinkEdge servers for sites without a server room: shops, factories, branches); vendor_describe lists the lines of the pack"
+                },
+                "ttft_s": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time to first token, s"
+                },
+                "gpu_overhead_pct": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number",
+                      "maximum": 95
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPU memory kept free, percent (default 20)"
+                },
+                "rag": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "params_b": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model size in billions, when the model is not known"
+                },
+                "custom_model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CustomModel"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A model by its numbers, instead of model"
+                },
+                "ha": {
+                  "default": false,
+                  "description": "One extra server for availability",
+                  "type": "boolean"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "tokens_in": {
+                  "default": 1500,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "gpu_count": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A fixed number of GPUs: the answer says if they hold the load"
+                },
+                "tier": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "Small",
+                        "Medium",
+                        "Large"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "users": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Concurrent users"
+                }
+              },
+              "$defs": {
+                "ExistingGpus": {
+                  "properties": {
+                    "count": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "gpu": {
+                      "maxLength": 80,
+                      "description": "GPUs the customer has, e.g. 'L40S', 'H100 SXM'",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "gpu",
+                    "count"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "CustomModel": {
+                  "properties": {
+                    "hidden": {
+                      "description": "Hidden size",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "heads": {
+                      "description": "Attention heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "params_b": {
+                      "exclusiveMinimum": 0,
+                      "description": "Parameters, billions",
+                      "type": "number"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "active_params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Active parameters per token, billions (MoE)"
+                    },
+                    "is_moe": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "layers": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "kv_heads": {
+                      "description": "Key-value heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'acme/custom-34b'"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    }
+                  },
+                  "required": [
+                    "params_b",
+                    "layers",
+                    "hidden",
+                    "heads",
+                    "kv_heads"
+                  ],
+                  "description": "A model the Lenovo Sizing Tool does not list, described as its \"Custom model\" form asks.",
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "Workload": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "llm",
+                        "embedding",
+                        "speech"
+                      ],
+                      "default": "llm",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "tokens_out": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "tokens_per_s": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Embedding load, tokens per second, when known"
+                    },
+                    "streams": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Live audio streams at once (speech)"
+                    },
+                    "requests_per_minute": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'Llama 3.3 70B', 'bge-m3', 'Whisper large-v3'"
+                    },
+                    "use_case": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "custom_model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CustomModel"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "tokens_in": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "precision": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "fp32",
+                            "fp16",
+                            "bf16",
+                            "fp8",
+                            "int8",
+                            "int4",
+                            "fp4"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "users": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "People at once (LLM, embedding)"
+                    }
+                  },
+                  "description": "One workload of the cluster (22 Oct): a chat LLM, an embedding model or a speech-to-text model.",
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "design_propose": {
+              "properties": {
+                "precision": {
+                  "enum": [
+                    "fp32",
+                    "fp16",
+                    "bf16",
+                    "fp8",
+                    "int8",
+                    "int4",
+                    "fp4"
+                  ],
+                  "default": "fp8",
+                  "type": "string"
+                },
+                "workloads": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/Workload"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Several workloads on one cluster, instead of model/users; each gets its own GPUs, packed into servers"
+                },
+                "rag_corpus_gb": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "country": {
+                  "default": "AE",
+                  "maxLength": 60,
+                  "minLength": 2,
+                  "type": "string",
+                  "description": "Delivery country: name or ISO code"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                },
+                "tokens_out": {
+                  "default": 400,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "itl_ms": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time between tokens, ms"
+                },
+                "requests_per_minute": {
+                  "default": 2,
+                  "description": "Requests per user per minute; 0 = every user always has a request waiting (the Lenovo Sizing Tool's meaning)",
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "nvlink": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "NVLink between GPUs; default: as the GPU supports it"
+                },
+                "gpu": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 80,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The GPU the customer names, as said, e.g. 'B200', 'H200 SXM', 'H100 NVL', 'L40S'. A reference built on it is used (AI Express or SR680a V3); when none is, the design keeps its own GPU and requested_gpu gives the Lenovo Sizing Tool's answer for the named one"
+                },
+                "model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model key, e.g. llama3-70b, qwen3-32b, deepseek-v3"
+                },
+                "use_case": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "chatbot",
+                        "multimodal",
+                        "codeassistant",
+                        "content",
+                        "documentqa",
+                        "api",
+                        "research",
+                        "custom"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The Lenovo Sizing Tool's use case: its preset tokens and rate when those are not given"
+                },
+                "service_years": {
+                  "enum": [3, 5],
+                  "default": 3,
+                  "type": "integer"
+                },
+                "existing": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/ExistingGpus"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPUs the customer already has: they carry the load first; only the rest is sized on new servers"
+                },
+                "line": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 40,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Product line: ai_express (default), mvp (HGX servers), edge (ThinkEdge servers for sites without a server room: shops, factories, branches); vendor_describe lists the lines of the pack"
+                },
+                "ttft_s": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time to first token, s"
+                },
+                "gpu_overhead_pct": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number",
+                      "maximum": 95
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPU memory kept free, percent (default 20)"
+                },
+                "rag": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "params_b": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model size in billions, when the model is not known"
+                },
+                "custom_model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CustomModel"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A model by its numbers, instead of model"
+                },
+                "ha": {
+                  "default": false,
+                  "description": "One extra server for availability",
+                  "type": "boolean"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "tokens_in": {
+                  "default": 1500,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "gpu_count": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A fixed number of GPUs: the answer says if they hold the load"
+                },
+                "tier": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "Small",
+                        "Medium",
+                        "Large"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "users": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Concurrent users"
+                }
+              },
+              "$defs": {
+                "ExistingGpus": {
+                  "properties": {
+                    "count": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "gpu": {
+                      "maxLength": 80,
+                      "description": "GPUs the customer has, e.g. 'L40S', 'H100 SXM'",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "gpu",
+                    "count"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "CustomModel": {
+                  "properties": {
+                    "hidden": {
+                      "description": "Hidden size",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "heads": {
+                      "description": "Attention heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "params_b": {
+                      "exclusiveMinimum": 0,
+                      "description": "Parameters, billions",
+                      "type": "number"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "active_params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Active parameters per token, billions (MoE)"
+                    },
+                    "is_moe": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "layers": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "kv_heads": {
+                      "description": "Key-value heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'acme/custom-34b'"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    }
+                  },
+                  "required": [
+                    "params_b",
+                    "layers",
+                    "hidden",
+                    "heads",
+                    "kv_heads"
+                  ],
+                  "description": "A model the Lenovo Sizing Tool does not list, described as its \"Custom model\" form asks.",
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "Workload": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "llm",
+                        "embedding",
+                        "speech"
+                      ],
+                      "default": "llm",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "tokens_out": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "tokens_per_s": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Embedding load, tokens per second, when known"
+                    },
+                    "streams": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Live audio streams at once (speech)"
+                    },
+                    "requests_per_minute": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'Llama 3.3 70B', 'bge-m3', 'Whisper large-v3'"
+                    },
+                    "use_case": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "custom_model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CustomModel"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "tokens_in": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "precision": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "fp32",
+                            "fp16",
+                            "bf16",
+                            "fp8",
+                            "int8",
+                            "int4",
+                            "fp4"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "users": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "People at once (LLM, embedding)"
+                    }
+                  },
+                  "description": "One workload of the cluster (22 Oct): a chat LLM, an embedding model or a speech-to-text model.",
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "advice_explain": {
+              "properties": {
+                "question": {
+                  "maxLength": 1000,
+                  "minLength": 3,
+                  "type": "string"
+                },
+                "part": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "additionalProperties": true
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The part the question is about, as context"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "required": [
+                "question"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "vendor_describe": {
+              "properties": {
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "sizing_calc": {
+              "properties": {
+                "precision": {
+                  "enum": [
+                    "fp32",
+                    "fp16",
+                    "bf16",
+                    "fp8",
+                    "int8",
+                    "int4",
+                    "fp4"
+                  ],
+                  "default": "fp8",
+                  "type": "string"
+                },
+                "workloads": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/Workload"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Several workloads on one cluster, instead of model/users; each gets its own GPUs, packed into servers"
+                },
+                "rag_corpus_gb": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "country": {
+                  "default": "AE",
+                  "maxLength": 60,
+                  "minLength": 2,
+                  "type": "string",
+                  "description": "Delivery country: name or ISO code"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                },
+                "tokens_out": {
+                  "default": 400,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "itl_ms": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time between tokens, ms"
+                },
+                "requests_per_minute": {
+                  "default": 2,
+                  "description": "Requests per user per minute; 0 = every user always has a request waiting (the Lenovo Sizing Tool's meaning)",
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "nvlink": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "NVLink between GPUs; default: as the GPU supports it"
+                },
+                "gpu": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 80,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The GPU the customer names, as said, e.g. 'B200', 'H200 SXM', 'H100 NVL', 'L40S'. A reference built on it is used (AI Express or SR680a V3); when none is, the design keeps its own GPU and requested_gpu gives the Lenovo Sizing Tool's answer for the named one"
+                },
+                "model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model key, e.g. llama3-70b, qwen3-32b, deepseek-v3"
+                },
+                "use_case": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "chatbot",
+                        "multimodal",
+                        "codeassistant",
+                        "content",
+                        "documentqa",
+                        "api",
+                        "research",
+                        "custom"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The Lenovo Sizing Tool's use case: its preset tokens and rate when those are not given"
+                },
+                "service_years": {
+                  "enum": [3, 5],
+                  "default": 3,
+                  "type": "integer"
+                },
+                "existing": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "items": {
+                        "$ref": "#/$defs/ExistingGpus"
+                      },
+                      "type": "array"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPUs the customer already has: they carry the load first; only the rest is sized on new servers"
+                },
+                "line": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 40,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Product line: ai_express (default), mvp (HGX servers), edge (ThinkEdge servers for sites without a server room: shops, factories, branches); vendor_describe lists the lines of the pack"
+                },
+                "ttft_s": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Target time to first token, s"
+                },
+                "gpu_overhead_pct": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 0,
+                      "type": "number",
+                      "maximum": 95
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "GPU memory kept free, percent (default 20)"
+                },
+                "rag": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "params_b": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Model size in billions, when the model is not known"
+                },
+                "custom_model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/CustomModel"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A model by its numbers, instead of model"
+                },
+                "ha": {
+                  "default": false,
+                  "description": "One extra server for availability",
+                  "type": "boolean"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "tokens_in": {
+                  "default": 1500,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                "gpu_count": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A fixed number of GPUs: the answer says if they hold the load"
+                },
+                "tier": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "Small",
+                        "Medium",
+                        "Large"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "users": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "Concurrent users"
+                }
+              },
+              "$defs": {
+                "ExistingGpus": {
+                  "properties": {
+                    "count": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "gpu": {
+                      "maxLength": 80,
+                      "description": "GPUs the customer has, e.g. 'L40S', 'H100 SXM'",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "gpu",
+                    "count"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "CustomModel": {
+                  "properties": {
+                    "hidden": {
+                      "description": "Hidden size",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "heads": {
+                      "description": "Attention heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "params_b": {
+                      "exclusiveMinimum": 0,
+                      "description": "Parameters, billions",
+                      "type": "number"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "active_params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Active parameters per token, billions (MoE)"
+                    },
+                    "is_moe": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "layers": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "kv_heads": {
+                      "description": "Key-value heads",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'acme/custom-34b'"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    }
+                  },
+                  "required": [
+                    "params_b",
+                    "layers",
+                    "hidden",
+                    "heads",
+                    "kv_heads"
+                  ],
+                  "description": "A model the Lenovo Sizing Tool does not list, described as its \"Custom model\" form asks.",
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "Workload": {
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "llm",
+                        "embedding",
+                        "speech"
+                      ],
+                      "default": "llm",
+                      "type": "string"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "tokens_out": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "tokens_per_s": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Embedding load, tokens per second, when known"
+                    },
+                    "streams": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Live audio streams at once (speech)"
+                    },
+                    "requests_per_minute": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "e.g. 'Llama 3.3 70B', 'bge-m3', 'Whisper large-v3'"
+                    },
+                    "use_case": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "params_b": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "custom_model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CustomModel"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "tokens_in": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "precision": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "fp32",
+                            "fp16",
+                            "bf16",
+                            "fp8",
+                            "int8",
+                            "int4",
+                            "fp4"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 80,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "users": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "People at once (LLM, embedding)"
+                    }
+                  },
+                  "description": "One workload of the cluster (22 Oct): a chat LLM, an embedding model or a speech-to-text model.",
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "bom_from_spec": {
+              "properties": {
+                "parts": {
+                  "items": {
+                    "$ref": "#/$defs/SpecPart"
+                  },
+                  "default": [],
+                  "description": "Parts with no field of their own, found in the catalog by words",
+                  "type": "array"
+                },
+                "workload": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/Workload"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "preferred_platforms": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "description": "Servers the RFP names, of any vendor: the Lenovo equivalent is offered and named as a deviation",
+                  "type": "array"
+                },
+                "country": {
+                  "default": "AE",
+                  "maxLength": 60,
+                  "minLength": 2,
+                  "type": "string"
+                },
+                "purpose": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "'training' or 'fine-tuning'; empty = inference"
+                },
+                "service_years": {
+                  "default": 5,
+                  "description": "Years of Premier service, 1 to 5",
+                  "minimum": 1,
+                  "type": "integer",
+                  "maximum": 5
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                },
+                "servers": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/ServerSpec"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "rack": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/RackSpec"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "terms": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "description": "Conditions that are no part (repair time, sealed cases): asked of Lenovo",
+                  "type": "array"
+                },
+                "storage": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/StorageSpec"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "network": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/NetworkSpec"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "$defs": {
+                "ServerSpec": {
+                  "properties": {
+                    "max_rack_units": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "boot": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/BootSpec"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cooling": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "air or liquid"
+                    },
+                    "ethernet": {
+                      "items": {
+                        "$ref": "#/$defs/EthernetSpec"
+                      },
+                      "default": [],
+                      "type": "array"
+                    },
+                    "count": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The RFP's minimum"
+                    },
+                    "max_kw": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Power limit per server in kW"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "power_redundancy": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "fc": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/FcSpec"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "gpu": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/GpuSpec"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "cpu": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "$ref": "#/$defs/CpuSpec"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "memory_gb": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Per server"
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "CpuSpec": {
+                  "properties": {
+                    "vendor": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "AMD",
+                            "Intel",
+                            "amd",
+                            "intel"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "min_cores": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Cores per CPU"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "sockets": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer",
+                          "maximum": 2
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "StorageSpec": {
+                  "properties": {
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "DG5200",
+                            "DM7200F",
+                            "DM5200F",
+                            "DM3200F",
+                            "DG7200"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "protocol": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "FC, iSCSI, NFS"
+                    },
+                    "growth_tb": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "usable_tb": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "exclusiveMinimum": 0,
+                          "type": "number"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "EthernetSpec": {
+                  "properties": {
+                    "adapters": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "ports": {
+                      "description": "Ports per adapter as the RFP asks",
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "speed_gb": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "speed_gb",
+                    "ports"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "GpuSpec": {
+                  "properties": {
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "GPU model as the RFP names it, e.g. H200 NVL, RTX PRO 6000"
+                    },
+                    "future_per_server": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 0,
+                          "type": "integer",
+                          "maximum": 8
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Room the RFP asks for, in GPUs per server"
+                    },
+                    "nvlink": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "per_server": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer",
+                          "maximum": 8
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "SpecPart": {
+                  "properties": {
+                    "qty": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Per server"
+                    },
+                    "replaces": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Words of the reference part it replaces"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "text": {
+                      "maxLength": 300,
+                      "description": "The requirement as written, e.g. '8x InfiniBand XDR'",
+                      "type": "string"
+                    },
+                    "query": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 200,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "Catalog words that find the part"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "RackSpec": {
+                  "properties": {
+                    "pdus": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "racks": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "BootSpec": {
+                  "properties": {
+                    "size_tb": {
+                      "default": 1,
+                      "exclusiveMinimum": 0,
+                      "type": "number"
+                    },
+                    "drives": {
+                      "default": 2,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "raid": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "FcSpec": {
+                  "properties": {
+                    "ports": {
+                      "default": 2,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "speed_gb": {
+                      "default": 32,
+                      "minimum": 8,
+                      "type": "integer"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "NetworkSpec": {
+                  "properties": {
+                    "fc_switches": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "enum": [
+                            "existing",
+                            "new",
+                            "none"
+                          ],
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "data_switches": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "boolean"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                },
+                "Workload": {
+                  "properties": {
+                    "model": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    },
+                    "users": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "minimum": 1,
+                          "type": "integer"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "price_get": {
+              "properties": {
+                "platform": {
+                  "default": "SR650a V4",
+                  "type": "string"
+                },
+                "country": {
+                  "default": "AE",
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "codes": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "required": [
+                "codes"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "rules_check": {
+              "properties": {
+                "platform": {
+                  "description": "A platform of vendor_describe.platforms",
+                  "type": "string"
+                },
+                "country": {
+                  "default": "AE",
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                "lines": {
+                  "items": {
+                    "$ref": "#/$defs/Line"
+                  },
+                  "minItems": 1,
+                  "type": "array"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "model": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "SXM5",
+                        "4-DW",
+                        "8-DW"
+                      ],
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "$defs": {
+                "Line": {
+                  "properties": {
+                    "qty": {
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "code": {
+                      "maxLength": 16,
+                      "minLength": 4,
+                      "type": "string"
+                    },
+                    "request_id": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 128,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "MAGIC's random request number; echoed"
+                    },
+                    "role": {
+                      "default": null,
+                      "anyOf": [
+                        {
+                          "maxLength": 64,
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "description": "The role MAGIC asks this part for; echoed"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "qty"
+                  ],
+                  "type": "object",
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "platform",
+                "lines"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            },
+            "assets_get": {
+              "properties": {
+                "views": {
+                  "items": {
+                    "enum": [
+                      "front",
+                      "angled",
+                      "rear",
+                      "internal",
+                      "card",
+                      "product",
+                      "block_diagram"
+                    ],
+                    "type": "string"
+                  },
+                  "default": [],
+                  "type": "array"
+                },
+                "products": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "type": "array"
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "codes": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": [],
+                  "type": "array"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "catalog_search": {
+              "properties": {
+                "platform": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "A platform of vendor_describe.platforms"
+                },
+                "aie_only": {
+                  "default": false,
+                  "type": "boolean"
+                },
+                "limit": {
+                  "default": 20,
+                  "minimum": 1,
+                  "type": "integer",
+                  "maximum": 200
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "query": {
+                  "default": "",
+                  "type": "string"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                },
+                "region": {
+                  "default": "",
+                  "type": "string"
+                }
+              },
+              "type": "object",
+              "additionalProperties": false
+            },
+            "design_figure": {
+              "properties": {
+                "part": {
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "request_id": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 128,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "MAGIC's random request number; echoed"
+                },
+                "role": {
+                  "default": null,
+                  "anyOf": [
+                    {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "description": "The role MAGIC asks this part for; echoed"
+                }
+              },
+              "required": [
+                "part"
+              ],
+              "type": "object",
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    ],
+    "extendedAgentCard": true
+  },
+  "securitySchemes": {
+    "apiKey": {
+      "apiKeySecurityScheme": {
+        "description": "Client key, given by the agent's admin",
+        "location": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "securityRequirements": [
+    {
+      "schemes": {
+        "apiKey": {
+
+        }
+      }
+    }
+  ],
+  "defaultInputModes": [
+    "application/json",
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "application/json"
+  ],
+  "skills": [
+    {
+      "id": "vendor_describe",
+      "name": "Vendor describe",
+      "description": "The agent profile: vendor, product lines, actions, agent version, data date.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"vendor_describe\", \"request\": {}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "catalog_search",
+      "name": "Catalog search",
+      "description": "Lenovo items by words, platform, AI Express and region.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"catalog_search\", \"request\": {\"query\": \"RTX PRO 6000\", \"platform\": \"SR675 V3\", \"aie_only\": true}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "sizing_calc",
+      "name": "Sizing calc",
+      "description": "GPU memory, GPUs and the AI Express tier for a workload. Code only.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"sizing_calc\", \"request\": {\"model\": \"Llama 3.3 70B\", \"users\": 150, \"country\": \"UAE\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "reference_match",
+      "name": "Reference match",
+      "description": "Validated reference configurations; the tier, or the requirement from which the tier is found.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"reference_match\", \"request\": {\"tier\": \"Medium\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "rules_check",
+      "name": "Rules check",
+      "description": "Check BOM lines of one server against Lenovo rules; each violation has its BOM lines and a fix, and the nearest valid configuration.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"rules_check\", \"request\": {\"platform\": \"SR675 V3\", \"model\": \"8-DW\", \"lines\": [{\"code\": \"BKTJ\", \"qty\": 4}]}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "price_get",
+      "name": "Price get",
+      "description": "List prices with date and source.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"price_get\", \"request\": {\"codes\": [\"CBK8\", \"BKTJ\"], \"platform\": \"SR675 V3\", \"country\": \"AE\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "assets_get",
+      "name": "Assets get",
+      "description": "Product photos as links, with source and licence.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"assets_get\", \"request\": {\"products\": [\"SR675 V3\"], \"views\": [\"front\", \"rear\"]}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "design_propose",
+      "name": "Design propose",
+      "description": "A full part of the solution: tier, servers, BOM by role, rules check with fixes, interfaces, layers, gaps and caveats; the BOM as an Excel link. 15-60 s.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "design"
+      ],
+      "examples": [
+        "{\"skill\": \"design_propose\", \"request\": {\"model\": \"gpt-oss-120b\", \"users\": 400, \"ha\": true, \"country\": \"UAE\", \"request_id\": \"deal-42\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "design_change",
+      "name": "Design change",
+      "description": "Apply one change to a part; returns the new part and the difference. A change that breaks a hard rule is refused with the nearest valid configuration.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "design"
+      ],
+      "examples": [
+        "{\"skill\": \"design_change\", \"request\": {\"part\": {\"...\": \"the part from design_propose\"}, \"change\": {\"kind\": \"users\", \"value\": 600}}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "design_figure",
+      "name": "Design figure",
+      "description": "Rack elevation of a part as an SVG link, and the layered description.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "design"
+      ],
+      "examples": [
+        "{\"skill\": \"design_figure\", \"request\": {\"part\": {\"...\": \"the part from design_propose\"}}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "advice_explain",
+      "name": "Advice explain",
+      "description": "Answer from the Lenovo guides, with quotes and sources.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"advice_explain\", \"request\": {\"question\": \"Why Medium and not Large for 400 people?\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "bom_from_spec",
+      "name": "Bom from spec",
+      "description": "A full BOM from the requirements of an RFP: servers configured to the parts asked, storage by usable capacity, switches, service, rack and power, ports; the deviations from the RFP and the questions, each with the value taken. A missing fact is an assumption. 5-30 s.",
+      "tags": [
+        "lenovo",
+        "ai-express",
+        "vendor-agent/1",
+        "data"
+      ],
+      "examples": [
+        "{\"skill\": \"bom_from_spec\", \"request\": {\"servers\": {\"count\": 2, \"gpu\": {\"model\": \"H200 NVL\", \"per_server\": 2, \"nvlink\": true, \"future_per_server\": 6}, \"cpu\": {\"vendor\": \"AMD\", \"min_cores\": 96}, \"memory_gb\": 2048, \"ethernet\": [{\"speed_gb\": 100, \"ports\": 4, \"adapters\": 2}], \"fc\": {\"speed_gb\": 32, \"ports\": 2}, \"boot\": {\"drives\": 2, \"size_tb\": 1}}, \"storage\": {\"usable_tb\": 30, \"growth_tb\": 100, \"protocol\": \"FC\"}, \"service_years\": 5, \"country\": \"Jordan\"}}"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    }
+  ]
+}
